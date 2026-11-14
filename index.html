@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ぴよゲームズ</title>
+<!-- iPhoneホーム画面アイコン -->
+<link rel="apple-touch-icon" href="https://sorafjah.github.io/piyo-games/piyo-games540.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ぴよゲームズ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #eef8fc; --card: #fff; --accent: #2b8cc4; --accent-dark: #1f6f9f;
+  --text: #1a2a33; --muted: #5d6f7a; --border: #cfe6f1;
+  --new-color: #e67e22;
+  --radius: 10px; --shadow: 0 2px 8px rgba(30,100,140,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'BIZ UDPGothic','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+}
+header, .controls, .card, .qr-wrap { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+rt { font-size: .5em; }
+
+/* ── ヘッダー ── */
+header {
+  background: var(--accent); color: #fff;
+  padding: 10px 20px; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  display: flex; align-items: center; gap: 14px;
+}
+.header-text { flex: 1; }
+header h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: .04em; }
+header p  { font-size: .78rem; opacity: .92; margin-top: 1px; }
+.qr-wrap {
+  flex-shrink: 0; background: #fff; border-radius: 6px;
+  padding: 4px; cursor: pointer; position: relative;
+}
+.qr-wrap > img { width: 52px; height: 52px; display: block; }
+.qr-tooltip {
+  display: none; position: absolute; right: 0; top: 64px;
+  background: #fff; border-radius: 10px; padding: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 200;
+  text-align: center; width: 190px;
+}
+.qr-tooltip img { width: 160px; height: 160px; display: block; margin: 0 auto; }
+.qr-tooltip p { font-size: .72rem; color: var(--muted); margin-top: 6px; line-height: 1.7; }
+.qr-wrap.open .qr-tooltip { display: block; }
+
+/* ── 検索 ── */
+.controls {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 10px 16px; position: sticky; top: 72px; z-index: 99;
+}
+.search-row { display: flex; align-items: center; gap: 10px; max-width: 1200px; margin: 0 auto; }
+.search-box {
+  flex: 1; min-width: 160px; display: flex; align-items: center; gap: 6px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 0 12px; min-height: 40px;
+}
+.search-box input {
+  border: none; background: transparent; outline: none;
+  font-size: 16px; width: 100%; font-family: inherit; color: var(--text);
+  -webkit-user-select: text; user-select: text;
+}
+.result-count { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+
+/* ── メイン ── */
+main { max-width: 1200px; margin: 0 auto; padding: 18px 14px 60px; }
+
+.loading { text-align: center; padding: 60px 20px; color: var(--muted); font-size: .95rem; }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; margin-left: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* カードグリッド：PC=3列、タブレット=2列、スマホ=1列 */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media(max-width:900px){ .cards { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:560px){ .cards { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow); text-decoration: none; color: inherit;
+  transition: box-shadow .15s, transform .15s, border-color .15s;
+}
+.card:active { transform: scale(.99); border-color: var(--accent); }
+@media (hover: hover) {
+  .card:hover { box-shadow: 0 4px 16px rgba(30,100,140,0.16); transform: translateY(-2px); border-color: var(--accent); }
+  .card:hover .card-img-wrap img { transform: scale(1.02); }
+}
+
+.card-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.card-title { font-size: .95rem; font-weight: 700; line-height: 1.4; }
+.card-desc  { font-size: .8rem; color: var(--muted); line-height: 1.6; flex: 1; }
+.card-footer { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+.badge-new {
+  font-size: .7rem; padding: 2px 7px; border-radius: 4px;
+  background: #fef0e6; color: var(--new-color);
+  font-weight: 700; border: 1px solid #f0a060;
+}
+
+.card-img-wrap {
+  width: 100%; aspect-ratio: 16/9; overflow: hidden;
+  background: var(--bg); flex-shrink: 0;
+  border-radius: 0 0 var(--radius) var(--radius);
+  margin-bottom: 10px;
+}
+.card-img-wrap img {
+  width: 100%; height: 100%; object-fit: contain; object-position: center top;
+  display: block; transition: transform .2s; background: #fff;
+}
+
+.no-results { text-align: center; padding: 50px 20px; color: var(--muted); font-size: .95rem; display: none; }
+.error-msg  { text-align: center; padding: 30px; color: #a3402f; background: #fdf3f0; border-radius: 8px; margin: 20px 0; font-size: .9rem; line-height: 1.8; }
+
+@media(max-width:560px){
+  header { padding: 8px 12px; }
+  .controls { top: 66px; }
+  .qr-wrap > img { width: 42px; height: 42px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <h1>🐤 ぴよゲームズ</h1>
+    <p><ruby>無料<rt>むりょう</rt></ruby>・インストール<ruby>不要<rt>ふよう</rt></ruby></p>
+  </div>
+  <div class="qr-wrap" id="qrWrap">
+    <img src="piyo-games540.png" alt="QRコード">
+    <div class="qr-tooltip">
+      <img src="piyo-games540.png" alt="QRコード">
+      <p>このページのQRコード<br>iPhoneは<ruby>長<rt>なが</rt></ruby><ruby>押<rt>お</rt></ruby>しで<ruby>保存<rt>ほぞん</rt></ruby>→<br>ホーム<ruby>画面<rt>がめん</rt></ruby>に<ruby>追加<rt>ついか</rt></ruby></p>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-row">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="ことばでさがす…" autocomplete="off">
+    </div>
+    <span class="result-count" id="resultCount"></span>
+  </div>
+</div>
+
+<main id="main"><div class="loading">よみこみ<ruby>中<rt>ちゅう</rt></ruby><span class="spinner"></span></div></main>
+<div class="no-results" id="noResults">あてはまるゲームが<ruby>見<rt>み</rt></ruby>つからなかったよ。</div>
+
+<script>
+// iroiroai と同じデータ（Notion → Cloudflare Worker）から「ゲーム」だけを表示する
+const WORKER_URL = 'https://sparkling-water-9d71.tofya17.workers.dev';
+const TARGET_CAT = 'ゲーム';
+const NEW_DAYS = 7; // 何日以内を新着とするか
+
+let games = [];
+
+// GitHub raw配信をjsDelivr CDN経由に変換
+function toCdnUrl(url) {
+  if (!url) return url;
+  const m = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/);
+  if (!m) return url;
+  const [, user, repo, branch, path] = m;
+  return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${path}`;
+}
+
+function isNew(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return false;
+  return (Date.now() - d.getTime()) / 86400000 <= NEW_DAYS;
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(WORKER_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const all = await res.json();
+    games = all.filter(a => a.cat === TARGET_CAT);
+    games.sort((a, b) => {
+      const da = a.date ? new Date(a.date) : new Date(0);
+      const db = b.date ? new Date(b.date) : new Date(0);
+      return db - da;
+    });
+    render();
+  } catch (e) {
+    document.getElementById('main').innerHTML =
+      `<div class="error-msg">データをよみこめなかったよ。<br>しばらくしてから、もう<ruby>一度<rt>いちど</rt></ruby>ひらいてね。<br><small>${e.message}</small></div>`;
+  }
+}
+
+function buildCard(a) {
+  const el = document.createElement('a');
+  el.className = 'card';
+  el.href = a.url || '#';
+  if (a.url) { el.target = '_blank'; el.rel = 'noopener'; }
+
+  el.innerHTML = `
+    <div class="card-body">
+      <span class="card-title">${a.title || ''}</span>
+      <div class="card-desc">${a.desc || ''}</div>
+      ${isNew(a.date) ? '<div class="card-footer"><span class="badge-new">NEW</span></div>' : ''}
+    </div>
+    ${a.img ? `<div class="card-img-wrap"><img src="${toCdnUrl(a.img)}" alt="${a.title || ''}" width="400" height="225" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'"></div>` : ''}
+  `;
+  return el;
+}
+
+function render() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  const list = games.filter(a => {
+    if (!q) return true;
+    return [a.title, a.desc, a.tags].join(' ').toLowerCase().includes(q);
+  });
+
+  if (list.length) {
+    const grid = document.createElement('div');
+    grid.className = 'cards';
+    list.forEach(a => grid.appendChild(buildCard(a)));
+    main.appendChild(grid);
+  }
+
+  document.getElementById('resultCount').textContent = list.length ? `${list.length}こ` : '';
+  document.getElementById('noResults').style.display = list.length === 0 && games.length > 0 ? 'block' : 'none';
+}
+
+// QRコードはタップで開閉（ホバー依存にしない）
+const qrWrap = document.getElementById('qrWrap');
+qrWrap.addEventListener('click', e => { e.stopPropagation(); qrWrap.classList.toggle('open'); });
+document.addEventListener('click', () => qrWrap.classList.remove('open'));
+
+document.getElementById('searchInput').addEventListener('input', render);
+
+// ピンチ・ダブルタップによる拡大を防ぐ
+document.addEventListener('gesturestart', e => e.preventDefault());
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300 && !e.target.closest('a, input')) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+loadData();
+</script>
+</body>
+</html>
